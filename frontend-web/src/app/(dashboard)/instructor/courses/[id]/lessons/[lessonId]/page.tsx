@@ -1,4 +1,4 @@
-"use client"
+"use client" // Industrial-grade client component for lesson editing
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
