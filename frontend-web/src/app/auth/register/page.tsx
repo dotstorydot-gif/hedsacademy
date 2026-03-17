@@ -28,6 +28,7 @@ export default function RegisterPage() {
       email,
       password,
       options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
         data: {
           role: role,
           full_name: email.split('@')[0], // Placeholder for full name
