@@ -24,11 +24,19 @@ export interface Module {
   lessons: Lesson[]
 }
 
+interface Instructor {
+  full_name: string
+  bio: string
+  avatar_url: string
+  title: string
+}
+
 interface CourseContextType {
   curriculum: Module[]
   completeLesson: (lessonId: string) => void
   progressPercent: number
   courseTitle: string
+  instructor: Instructor | null
   loading: boolean
 }
 
@@ -41,6 +49,7 @@ export const CourseProvider = ({ children }: { children: React.ReactNode }) => {
 
   const [curriculum, setCurriculum] = useState<Module[]>([])
   const [courseTitle, setCourseTitle] = useState("")
+  const [instructor, setInstructor] = useState<Instructor | null>(null)
   const [loading, setLoading] = useState(true)
   const [studentId, setStudentId] = useState<string | null>(null)
 
@@ -50,7 +59,18 @@ export const CourseProvider = ({ children }: { children: React.ReactNode }) => {
 
     const [{ data: { user } }, { data: course }, { data: modules }] = await Promise.all([
       supabase.auth.getUser(),
-      supabase.from("courses").select("title").eq("id", courseId).single(),
+      supabase.from("courses")
+        .select(`
+          title,
+          instructor:instructor_id (
+            full_name,
+            bio,
+            avatar_url,
+            title
+          )
+        `)
+        .eq("id", courseId)
+        .single(),
       supabase.from("modules")
         .select("id, title, order_index")
         .eq("course_id", courseId)
@@ -58,7 +78,10 @@ export const CourseProvider = ({ children }: { children: React.ReactNode }) => {
     ])
 
     if (user) setStudentId(user.id)
-    if (course) setCourseTitle(course.title)
+    if (course) {
+      setCourseTitle(course.title)
+      setInstructor(course.instructor as any)
+    }
 
     if (!modules?.length) {
       setLoading(false)
@@ -86,8 +109,8 @@ export const CourseProvider = ({ children }: { children: React.ReactNode }) => {
       id: m.id,
       title: m.title,
       lessons: (lessons ?? [])
-        .filter((l: { module_id: string }) => l.module_id === m.id)
-        .map((l: Lesson & { module_id: string }) => ({
+        .filter((l: any) => l.module_id === m.id)
+        .map((l: any) => ({
           ...l,
           completed: completionSet.has(l.id),
         })),
@@ -124,7 +147,7 @@ export const CourseProvider = ({ children }: { children: React.ReactNode }) => {
   const progressPercent = allLessons.length > 0 ? Math.round((completedCount / allLessons.length) * 100) : 0
 
   return (
-    <CourseContext.Provider value={{ curriculum, completeLesson, progressPercent, courseTitle, loading }}>
+    <CourseContext.Provider value={{ curriculum, completeLesson, progressPercent, courseTitle, instructor, loading }}>
       {children}
     </CourseContext.Provider>
   )

@@ -40,6 +40,7 @@ export function Sidebar({ role }: SidebarProps) {
       { label: 'Live Sessions', icon: Calendar, href: '/instructor/live-sessions' },
       { label: 'Earnings', icon: CreditCard, href: '/instructor/earnings' },
       { label: 'Messages', icon: MessageSquare, href: '/instructor/messages' },
+      { label: 'My Profile', icon: Users, href: '/instructor/profile' },
     ],
     academy_admin: [
       { label: 'Dashboard', icon: LayoutDashboard, href: '/academy-admin' },

@@ -23,6 +23,7 @@ import {
   ExternalLink,
   Users,
 } from "lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useState, useMemo } from "react"
 import { useParams } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -32,7 +33,7 @@ export default function StudentLessonPage() {
   const params = useParams()
   const lessonId = params.lessonId as string
 
-  const { curriculum, completeLesson } = useCourse()
+  const { curriculum, completeLesson, instructor } = useCourse()
 
   // Get lesson data from real curriculum context
   const lessonData = useMemo(
@@ -394,23 +395,28 @@ export default function StudentLessonPage() {
           </Card>
 
           {/* Instructor Transmission — below overview card, not in a separate column */}
-          <Card className="border-2 border-black/5 dark:border-white/5 bg-card/10 rounded-3xl">
-            <CardContent className="p-7 md:p-9">
-              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 mb-5 italic">Instructor Transmission</p>
-              <div className="flex flex-col sm:flex-row gap-5 items-start">
-                <div className="flex items-center gap-4 shrink-0">
-                  <div className="size-12 rounded-2xl bg-black dark:bg-white text-white dark:text-black flex items-center justify-center text-[11px] font-black shadow-xl skew-x-[-8deg]">SJ</div>
-                  <div>
-                    <p className="text-sm font-black uppercase tracking-widest italic leading-none">Sarah Johnson</p>
-                    <p className="text-[9px] font-black text-muted-foreground/60 uppercase tracking-widest mt-1.5">HEDS Senior Reactor</p>
+          {instructor && (
+            <Card className="border-2 border-black/5 dark:border-white/5 bg-card/10 rounded-3xl">
+              <CardContent className="p-7 md:p-9">
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 mb-5 italic">Instructor Transmission</p>
+                <div className="flex flex-col sm:flex-row gap-5 items-start">
+                  <div className="flex items-center gap-4 shrink-0">
+                    <Avatar className="size-12 rounded-2xl bg-black dark:bg-white text-white dark:text-black flex items-center justify-center shadow-xl skew-x-[-8deg] overflow-hidden">
+                      <AvatarImage src={instructor.avatar_url} />
+                      <AvatarFallback className="text-[11px] font-black">{instructor.full_name?.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="text-sm font-black uppercase tracking-widest italic leading-none">{instructor.full_name}</p>
+                      <p className="text-[9px] font-black text-muted-foreground/60 uppercase tracking-widest mt-1.5">{instructor.title}</p>
+                    </div>
                   </div>
+                  <p className="text-sm font-black leading-loose italic text-foreground/70 uppercase border-l-2 border-brand-yellow/30 pl-5 flex-1">
+                    &quot;{instructor.bio}&quot;
+                  </p>
                 </div>
-                <p className="text-sm font-black leading-loose italic text-foreground/70 uppercase border-l-2 border-brand-yellow/30 pl-5 flex-1">
-                  &quot;Make sure to follow along with the source code provided in the resources tab. Try to build the simple counter again by yourself after watching this video.&quot;
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         {/* Resources */}

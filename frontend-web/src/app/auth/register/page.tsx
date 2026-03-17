@@ -5,7 +5,7 @@ import { createClient } from '@/utils/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export default function RegisterPage() {
@@ -17,6 +17,10 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null)
   const supabase = createClient()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const plan = searchParams?.get('plan')
+  const billing = searchParams?.get('billing')
+  const redirect = searchParams?.get('redirect')
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -32,6 +36,9 @@ export default function RegisterPage() {
         data: {
           role: role,
           full_name: email.split('@')[0], // Placeholder for full name
+          plan: plan,
+          billing: billing,
+          redirect: redirect,
         }
       }
     })
