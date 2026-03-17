@@ -6,7 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Download, FileText, ChevronRight, ChevronLeft, CheckCircle } from "lucide-react"
 
+import { useParams } from "next/navigation"
+
 export default function StudentLessonPage() {
+  const params = useParams()
+  const courseId = params.id as string
+  const lessonId = params.lessonId as string
   return (
     <div className="space-y-8 pb-20">
       {/* Video Player Section */}

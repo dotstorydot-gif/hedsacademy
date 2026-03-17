@@ -1,9 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Video, FileText, Save, Eye, Layout } from "lucide-react"
+import { Video, FileText, Save, Eye, Layout, MoreVertical } from "lucide-react"
+import { useParams } from "next/navigation"
 
 export default function LessonEditorPage() {
+  const params = useParams()
+  const courseId = params.id as string
+  const lessonId = params.lessonId as string
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between border-b pb-4">
