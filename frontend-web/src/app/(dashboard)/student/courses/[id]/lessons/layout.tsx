@@ -36,28 +36,33 @@ export default function LessonPlayerLayout({ children }: LessonPlayerLayoutProps
     }
   ]
 
+  // Calculate progress
+  const allLessons = curriculum.flatMap(m => m.lessons)
+  const completedCount = allLessons.filter(l => l.completed).length
+  const progressPercent = Math.round((completedCount / allLessons.length) * 100)
+
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
+    <div className="flex h-screen bg-background overflow-hidden font-sans">
       {/* Top Header */}
       <div className="flex flex-col flex-1 overflow-hidden">
         <header className="h-16 border-b flex items-center justify-between px-6 bg-card sticky top-0 z-50">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(!sidebarOpen)}>
+            <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(!sidebarOpen)} className="hover:bg-muted/50">
               <Menu className="size-5" />
             </Button>
-            <Link href="/student/courses" className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors">
+            <Link href="/student/courses" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest hover:text-brand-dark-yellow transition-colors">
               <ChevronLeft className="size-4" />
-              Back to Dashboard
+              Return Terminal
             </Link>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-6">
              <div className="hidden md:block">
-                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest text-right">Progress</p>
-                <div className="w-48 h-1.5 bg-muted rounded-full mt-1">
-                   <div className="h-full bg-primary rounded-full" style={{ width: '40%' }} />
+                <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] text-right">Academic Progress: {progressPercent}%</p>
+                <div className="w-48 h-1 bg-black/5 dark:bg-white/5 rounded-full mt-2 overflow-hidden">
+                   <div className="h-full bg-brand-yellow rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(255,215,0,0.3)]" style={{ width: `${progressPercent}%` }} />
                 </div>
              </div>
-             <div className="size-8 rounded-full bg-primary/10 border flex items-center justify-center text-xs font-bold text-primary">
+             <div className="size-9 rounded-xl bg-black dark:bg-white text-white dark:text-black flex items-center justify-center text-[10px] font-black shadow-lg border-2 border-transparent hover:border-brand-yellow transition-all cursor-pointer">
                 S
              </div>
           </div>
@@ -76,22 +81,22 @@ export default function LessonPlayerLayout({ children }: LessonPlayerLayoutProps
 
           {/* Curriculum Sidebar */}
           <aside className={cn(
-            "w-80 border-l bg-card flex flex-col transition-all duration-300 fixed inset-y-0 right-0 z-40 md:relative",
+            "w-80 border-l bg-card flex flex-col transition-all duration-300 fixed inset-y-0 right-0 z-40 md:relative overflow-hidden",
             sidebarOpen ? "translate-x-0" : "translate-x-full md:w-0 md:opacity-0"
           )}>
-            <div className="p-6 border-b flex items-center justify-between">
-              <h2 className="font-bold">Course Curriculum</h2>
+            <div className="p-6 border-b flex items-center justify-between bg-muted/20">
+              <h2 className="font-heading font-black text-[10px] uppercase tracking-[0.3em]">Course Curriculum</h2>
               <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setSidebarOpen(false)}>
                 <X className="size-4" />
               </Button>
             </div>
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto divide-y divide-border/40">
               {curriculum.map((module, i) => (
-                <div key={i} className="border-b last:border-0">
-                  <div className="bg-muted/50 px-6 py-3 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                <div key={i} className="">
+                  <div className="bg-muted/50 px-6 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">
                     {module.title}
                   </div>
-                  <div className="p-2 space-y-1">
+                  <div className="p-3 space-y-1">
                     {module.lessons.map((lesson) => {
                       const lessonHref = `/student/courses/${courseId}/lessons/${lesson.id}`
                       const isActive = pathname === lessonHref
@@ -100,18 +105,20 @@ export default function LessonPlayerLayout({ children }: LessonPlayerLayoutProps
                           key={lesson.id}
                           href={lessonHref}
                           className={cn(
-                            "flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-all group",
+                            "flex items-center gap-4 px-4 py-4 rounded-2xl text-[11px] font-bold transition-all group relative overflow-hidden",
                             isActive 
-                              ? "bg-primary text-primary-foreground shadow-md" 
+                              ? "bg-black text-white shadow-xl dark:bg-white dark:text-black" 
                               : "hover:bg-muted text-muted-foreground hover:text-foreground"
                           )}
                         >
+                          {isActive && <div className="absolute left-0 top-0 bottom-0 w-1 bg-brand-yellow" />}
                           {lesson.completed ? (
-                            <CheckCircle2 className={cn("size-4 shrink-0", isActive ? "text-primary-foreground" : "text-green-500")} />
+                            <CheckCircle2 className={cn("size-4 shrink-0 shadow-lg", isActive ? "text-brand-yellow" : "text-green-500")} />
                           ) : (
-                            <Circle className="size-4 shrink-0 text-muted-foreground/40 group-hover:text-primary transition-colors" />
+                            <Circle className={cn("size-4 shrink-0 text-muted-foreground/30 transition-colors", !isActive && "group-hover:text-brand-yellow")} />
                           )}
-                          <span className="flex-1 font-medium truncate">{lesson.title}</span>
+                          <span className="flex-1 truncate uppercase tracking-tight">{lesson.title}</span>
+                          {isActive && <div className="size-1.5 bg-brand-yellow rounded-full animate-pulse" />}
                         </Link>
                       )
                     })}
