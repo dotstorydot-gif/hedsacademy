@@ -43,7 +43,7 @@ export default function StudentLessonPage() {
                <TabsContent value="overview" className="mt-8">
                   <Card className="border-2 shadow-sm bg-card p-2">
                      <CardContent className="pt-6 prose dark:prose-invert max-w-none">
-                        <h3 className="text-xl font-bold mb-4">What you'll learn</h3>
+                        <h3 className="text-xl font-bold mb-4">What you&apos;ll learn</h3>
                         <p className="text-muted-foreground leading-relaxed">
                            In this lesson, we go deep into how components communicate with each other using Props. 
                            Understanding this data flow is crucial for building scalable React applications. 

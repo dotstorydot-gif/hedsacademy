@@ -32,6 +32,7 @@ export function ChatManager() {
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
   const [activeRoom, setActiveRoom] = useState<string | null>(null)
+  const [userId, setUserId] = useState<string | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const supabase = createClient()
 
@@ -43,6 +44,14 @@ export function ChatManager() {
       .order('created_at', { ascending: true })
 
     if (data) setMessages(data)
+  }, [supabase])
+
+  useEffect(() => {
+    const getSession = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) setUserId(user.id)
+    }
+    getSession()
   }, [supabase])
 
   useEffect(() => {
@@ -79,16 +88,13 @@ export function ChatManager() {
 
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!newMessage.trim() || !activeRoom) return
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    if (!newMessage.trim() || !activeRoom || !userId) return
 
     const { error } = await supabase
       .from('chat_messages')
       .insert({
         room_id: activeRoom,
-        sender_id: user.id,
+        sender_id: userId,
         content: newMessage.trim()
       })
 
@@ -161,7 +167,7 @@ export function ChatManager() {
           <ScrollArea className="flex-1 p-4">
             <div ref={scrollRef} className="space-y-4">
               {messages.map((m) => {
-                const isMe = m.sender_id === 'my-id' // Replace with actual user ID check
+                const isMe = m.sender_id === userId
                 return (
                   <div key={m.id} className={cn(
                     "flex flex-col",

@@ -16,7 +16,7 @@ export default function TermsPage() {
         <section>
           <h2 className="text-xl font-black uppercase tracking-widest mb-4 border-l-4 border-brand-yellow pl-4">2. Educational Services</h2>
           <p className="text-foreground/80">
-            HEDS Academy provides a digital learning platform. Course content is provided "as is" and completion 
+            HEDS Academy provides a digital learning platform. Course content is provided &ldquo;as is&rdquo; and completion 
             certificates are recognized within the scope of our private academy accreditation.
           </p>
         </section>
@@ -35,7 +35,7 @@ export default function TermsPage() {
             Users are strictly prohibited from:
             - Recording or redistributing protected course material.
             - Engaging in harassment or inappropriate communication in chat rooms.
-            - Attempting to circumvent the platform's security measures.
+            - Attempting to circumvent the platform&apos;s security measures.
           </p>
         </section>
 
