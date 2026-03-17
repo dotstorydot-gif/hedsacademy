@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+@plugin "tailwindcss-animate";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --font-sans: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-michroma), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  --color-brand-yellow: oklch(0.75 0.15 85);
+  --color-brand-dark-yellow: oklch(0.6 0.15 85);
+}
+
+:root {
+  /* HEDS ACADEMY BRANDING - LIGHT MODE */
+  --background: oklch(1 0 0); /* Pure White */
+  --foreground: oklch(0 0 0); /* Pure Black */
+  
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0 0 0);
+  
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0 0 0);
+  
+  --primary: oklch(0 0 0); /* Black as Primary */
+  --primary-foreground: oklch(1 0 0);
+  
+  --secondary: oklch(0.95 0 0);
+  --secondary-foreground: oklch(0 0 0);
+  
+  --muted: oklch(0.95 0 0);
+  --muted-foreground: oklch(0.4 0 0);
+  
+  --accent: oklch(0.75 0.15 85); /* Brand Yellow hint */
+  --accent-foreground: oklch(0 0 0);
+  
+  --destructive: oklch(0.5 0.2 25);
+  --destructive-foreground: oklch(1 0 0);
+  
+  --border: oklch(0.1 0 0 / 0.1);
+  --input: oklch(0.1 0 0 / 0.1);
+  --ring: oklch(0.6 0.15 85);
+  
+  --radius: 0.5rem;
+
+  --sidebar: oklch(0 0 0); /* Black Sidebar for contrast */
+  --sidebar-foreground: oklch(0.9 0 0);
+  --sidebar-primary: oklch(0.75 0.15 85);
+  --sidebar-primary-foreground: oklch(0 0 0);
+  --sidebar-accent: oklch(1 1 1 / 0.1);
+  --sidebar-accent-foreground: oklch(1 0 0);
+  --sidebar-border: oklch(1 1 1 / 0.1);
+  --sidebar-ring: oklch(0.75 0.15 85);
+}
+
+.dark {
+  /* HEDS ACADEMY BRANDING - DARK MODE */
+  --background: oklch(0.1 0 0); /* Very Dark Gray/Black */
+  --foreground: oklch(0.98 0 0);
+  
+  --card: oklch(0.12 0 0);
+  --card-foreground: oklch(0.98 0 0);
+  
+  --primary: oklch(0.98 0 0); /* White as Primary */
+  --primary-foreground: oklch(0 0 0);
+  
+  --accent: oklch(0.75 0.15 85); /* Brand Yellow hint */
+  --accent-foreground: oklch(0 0 0);
+  
+  --sidebar: oklch(0.05 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading tracking-tight;
+  }
+}
