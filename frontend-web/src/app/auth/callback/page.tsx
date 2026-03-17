@@ -22,8 +22,15 @@ export default function AuthCallback() {
       }
 
       if (data?.user) {
+        // Fetch the real role from the users table as metadata can be stale
+        const { data: profile } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', data.user.id)
+          .single()
+
         const metadata = data.user.user_metadata
-        const role = metadata?.role
+        const role = profile?.role || metadata?.role || 'student'
         const plan = metadata?.plan
         const billing = metadata?.billing
         const redirect = metadata?.redirect
@@ -52,13 +59,19 @@ export default function AuthCallback() {
         if (redirect) {
           router.push(redirect)
         } else {
-          router.push(role === 'instructor' ? '/instructor' : '/student')
+          const redirectMap: Record<string, string> = {
+            'super_admin': '/super-admin',
+            'academy_admin': '/academy-admin',
+            'instructor': '/instructor',
+            'student': '/student'
+          }
+          router.push(redirectMap[role] || '/student')
         }
       }
     }
 
     handleCallback()
-  }, [router, supabase.auth])
+  }, [router, supabase])
 
   return (
     <div className="flex h-screen w-full items-center justify-center">
