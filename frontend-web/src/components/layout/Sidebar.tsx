@@ -28,6 +28,7 @@ export function Sidebar({ role }: SidebarProps) {
     student: [
       { label: 'Dashboard', icon: LayoutDashboard, href: '/student' },
       { label: 'My Courses', icon: BookOpen, href: '/student/courses' },
+      { label: 'Subscription', icon: CreditCard, href: '/student/subscription' },
       { label: 'Schedule', icon: Calendar, href: '/student/schedule' },
       { label: 'Certificates', icon: GraduationCap, href: '/student/certificates' },
       { label: 'Settings', icon: Settings, href: '/student/settings' },

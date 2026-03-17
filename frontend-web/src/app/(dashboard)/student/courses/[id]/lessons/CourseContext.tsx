@@ -1,15 +1,25 @@
 "use client"
 
-import React, { createContext, useContext, useState } from "react"
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react"
+import { useParams } from "next/navigation"
+import { createClient } from "@/utils/supabase/client"
 
-interface Lesson {
+export interface Lesson {
   id: string
   title: string
   completed: boolean
   type: string
+  duration_minutes?: number
+  video_url?: string
+  meeting_url?: string
+  location_name?: string
+  location_address?: string
+  pdf_url?: string
+  free_preview?: boolean
 }
 
-interface Module {
+export interface Module {
+  id: string
   title: string
   lessons: Lesson[]
 }
@@ -18,54 +28,103 @@ interface CourseContextType {
   curriculum: Module[]
   completeLesson: (lessonId: string) => void
   progressPercent: number
+  courseTitle: string
+  loading: boolean
 }
 
 const CourseContext = createContext<CourseContextType | undefined>(undefined)
 
 export const CourseProvider = ({ children }: { children: React.ReactNode }) => {
+  const supabase = createClient()
+  const params = useParams()
+  const courseId = params?.id as string
 
-  const [curriculum, setCurriculum] = useState<Module[]>([
-    {
-      title: "Module 1: Getting Started",
-      lessons: [
-        { id: "l1", title: "Introduction", completed: true, type: 'video' },
-        { id: "l2", title: "Setting up the environment", completed: true, type: 'video' },
-        { id: "q1", title: "Basic Setup Quiz", completed: false, type: 'quiz' },
-      ]
-    },
-    {
-      title: "Module 2: Core Concepts",
-      lessons: [
-        { id: "l3", title: "React Fundamentals", completed: false, type: 'video' },
-        { id: "l3-props", title: "Understanding Props", completed: false, type: 'video' },
-        { id: "l4", title: "Advanced State", completed: false, type: 'video' },
-        { id: "a1", title: "Project: Counter App", completed: false, type: 'assignment' },
-        { id: "m1", title: "Live Q&A Session", completed: false, type: 'meeting' },
-      ]
-    },
-    {
-       title: "Module 3: Final Evaluation",
-       lessons: [
-         { id: "e1", title: "Final Certification Exam", completed: false, type: 'exam' }
-       ]
+  const [curriculum, setCurriculum] = useState<Module[]>([])
+  const [courseTitle, setCourseTitle] = useState("")
+  const [loading, setLoading] = useState(true)
+  const [studentId, setStudentId] = useState<string | null>(null)
+
+  const loadCurriculum = useCallback(async () => {
+    if (!courseId) return
+    setLoading(true)
+
+    const [{ data: { user } }, { data: course }, { data: modules }] = await Promise.all([
+      supabase.auth.getUser(),
+      supabase.from("courses").select("title").eq("id", courseId).single(),
+      supabase.from("modules")
+        .select("id, title, order_index")
+        .eq("course_id", courseId)
+        .order("order_index", { ascending: true }),
+    ])
+
+    if (user) setStudentId(user.id)
+    if (course) setCourseTitle(course.title)
+
+    if (!modules?.length) {
+      setLoading(false)
+      return
     }
-  ])
 
-  const completeLesson = (lessonId: string) => {
+    // Load lessons for all modules
+    const { data: lessons } = await supabase
+      .from("lessons")
+      .select("id, title, type, order_index, duration_minutes, video_url, meeting_url, location_name, location_address, pdf_url, free_preview, module_id")
+      .in("module_id", modules.map(m => m.id))
+      .order("order_index", { ascending: true })
+
+    // Load completions if logged in
+    let completionSet = new Set<string>()
+    if (user) {
+      const { data: completions } = await supabase
+        .from("lesson_completions")
+        .select("lesson_id")
+        .eq("student_id", user.id)
+      completionSet = new Set((completions ?? []).map((c: { lesson_id: string }) => c.lesson_id))
+    }
+
+    const mappedModules: Module[] = modules.map(m => ({
+      id: m.id,
+      title: m.title,
+      lessons: (lessons ?? [])
+        .filter((l: { module_id: string }) => l.module_id === m.id)
+        .map((l: Lesson & { module_id: string }) => ({
+          ...l,
+          completed: completionSet.has(l.id),
+        })),
+    }))
+
+    setCurriculum(mappedModules)
+    setLoading(false)
+  }, [courseId, supabase])
+
+  useEffect(() => { loadCurriculum() }, [loadCurriculum])
+
+  const completeLesson = async (lessonId: string) => {
+    // Optimistic UI update
     setCurriculum(prev => prev.map(module => ({
       ...module,
-      lessons: module.lessons.map(lesson => 
+      lessons: module.lessons.map(lesson =>
         lesson.id === lessonId ? { ...lesson, completed: true } : lesson
       )
     })))
+
+    // Persist to Supabase if logged in
+    if (studentId) {
+      await supabase.from("lesson_completions").upsert({
+        lesson_id: lessonId,
+        student_id: studentId,
+        course_id: courseId,
+        completed_at: new Date().toISOString(),
+      }, { onConflict: "student_id,lesson_id" })
+    }
   }
 
   const allLessons = curriculum.flatMap(m => m.lessons)
   const completedCount = allLessons.filter(l => l.completed).length
-  const progressPercent = Math.round((completedCount / allLessons.length) * 100)
+  const progressPercent = allLessons.length > 0 ? Math.round((completedCount / allLessons.length) * 100) : 0
 
   return (
-    <CourseContext.Provider value={{ curriculum, completeLesson, progressPercent }}>
+    <CourseContext.Provider value={{ curriculum, completeLesson, progressPercent, courseTitle, loading }}>
       {children}
     </CourseContext.Provider>
   )
