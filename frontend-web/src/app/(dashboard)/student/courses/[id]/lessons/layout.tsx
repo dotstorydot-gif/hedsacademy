@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useParams } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { CheckCircle2, Circle, ChevronLeft, Menu, X } from "lucide-react"
 import { useState } from "react"
@@ -9,13 +9,13 @@ import { Button } from "@/components/ui/button"
 
 interface LessonPlayerLayoutProps {
   children: React.ReactNode
-  params: { id: string }
 }
 
-export default function LessonPlayerLayout({ children, params }: LessonPlayerLayoutProps) {
+export default function LessonPlayerLayout({ children }: LessonPlayerLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const pathname = usePathname()
-  const courseId = params.id
+  const params = useParams()
+  const courseId = params.id as string
 
   // Mock curriculum data
   const curriculum = [

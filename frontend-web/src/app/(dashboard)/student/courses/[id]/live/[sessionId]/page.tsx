@@ -5,18 +5,22 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { ChevronLeft, Info, MessageSquare, Users, VideoOff } from "lucide-react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
+import React from "react"
 
-export default function LiveRoomPage({ params }: { params: { id: string, sessionId: string } }) {
+export default function LiveRoomPage() {
   const router = useRouter()
+  const params = useParams()
+  const courseId = params.id as string
+  const sessionId = params.sessionId as string
 
   return (
     <div className="flex flex-col h-[calc(100vh-120px)] space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild className="rounded-full">
-            <Link href={`/student/courses/${params.id}/lessons`}>
+            <Link href={`/student/courses/${courseId}/lessons`}>
               <ChevronLeft className="size-5" />
             </Link>
           </Button>
@@ -36,7 +40,7 @@ export default function LiveRoomPage({ params }: { params: { id: string, session
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 flex-1 min-h-0">
         <div className="lg:col-span-3 h-full">
           <JitsiEmbed 
-            roomName={`heds-academy-${params.sessionId}`} 
+            roomName={`heds-academy-${sessionId}`} 
             userName="Student User" 
             onLeave={() => router.back()}
           />

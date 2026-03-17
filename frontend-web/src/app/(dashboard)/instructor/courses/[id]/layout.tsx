@@ -1,19 +1,19 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useParams } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Info, ListTree, Settings, Eye, ChevronLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface CourseEditorLayoutProps {
   children: React.ReactNode
-  params: { id: string }
 }
 
-export default function CourseEditorLayout({ children, params }: CourseEditorLayoutProps) {
+export default function CourseEditorLayout({ children }: CourseEditorLayoutProps) {
   const pathname = usePathname()
-  const courseId = params.id
+  const params = useParams()
+  const courseId = params.id as string
 
   const tabs = [
     { label: "Basic Info", icon: Info, href: `/instructor/courses/${courseId}/info` },
