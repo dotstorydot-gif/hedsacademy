@@ -2,14 +2,43 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Award, Download, ShieldCheck, Share2, Copy, Check } from "lucide-react"
-import { useState } from "react"
+import { Award, Download, ShieldCheck, Share2, Copy, Check, Loader2 } from "lucide-react"
+import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
+import { createClient } from "@/utils/supabase/client"
+
+interface Certificate {
+  id: string
+  title: string
+  issuedBy: string
+  date: string
+  grade: string
+  id_hash: string
+}
 
 export default function StudentCertificatesPage() {
+  const [isMounted, setIsMounted] = useState(false)
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [userName, setUserName] = useState<string>("Academic Cadet")
+  const [isDownloading, setIsDownloading] = useState<string | null>(null)
   
-  const certificates = [
+  useEffect(() => {
+    setIsMounted(true)
+    const client = createClient()
+    
+    client.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        setUserName(user.user_metadata?.full_name || user.email?.split('@')[0] || "Academic Cadet")
+        
+        client.from('users').select('full_name').eq('id', user.id).single()
+          .then(({ data }) => {
+             if (data?.full_name) setUserName(data.full_name)
+          })
+      }
+    })
+  }, [])
+
+  const certificates: Certificate[] = [
     {
       id: "CERT-2026-001",
       title: "Full-Stack React Engineering",
@@ -28,20 +57,123 @@ export default function StudentCertificatesPage() {
     }
   ]
 
-  const handleDownload = (title: string) => {
-    // In a real app, this would trigger a PDF generation or download from storage
-    const msg = `Downloading Certificate: ${title}`
-    console.log(msg)
-    // Create a dummy blob to trigger a download
-    const blob = new Blob([msg], { type: 'text/plain' })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${title.replace(/\s+/g, '_')}_Certificate.txt`
-    document.body.appendChild(a)
-    a.click()
-    window.URL.revokeObjectURL(url)
-    document.body.removeChild(a)
+  const generateCertificateSVG = (cert: Certificate, studentName: string) => {
+    const width = 1400
+    const height = 1000
+    
+    return `
+      <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
+        <rect width="100%" height="100%" fill="#0a0a0a" />
+        
+        <!-- Premium Industrial Textures -->
+        <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+          <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#FFFFFF" stroke-width="0.5" stroke-opacity="0.05"/>
+        </pattern>
+        <rect width="100%" height="100%" fill="url(#grid)" />
+        
+        <!-- Outer Frame -->
+        <rect x="40" y="40" width="${width - 80}" height="${height - 80}" fill="none" stroke="#FFD700" stroke-width="1" stroke-opacity="0.1" />
+        <rect x="60" y="60" width="${width - 120}" height="${height - 120}" fill="none" stroke="#FFD700" stroke-width="4" stroke-opacity="0.05" />
+        
+        <!-- Corner Bolts -->
+        <circle cx="60" cy="60" r="8" fill="#FFD700" fill-opacity="0.2" />
+        <circle cx="${width - 60}" cy="60" r="8" fill="#FFD700" fill-opacity="0.2" />
+        <circle cx="60" cy="${height - 60}" r="8" fill="#FFD700" fill-opacity="0.2" />
+        <circle cx="${width - 60}" cy="${height - 60}" r="8" fill="#FFD700" fill-opacity="0.2" />
+
+        <!-- Accent Lines -->
+        <line x1="0" y1="150" x2="${width}" y2="150" stroke="#FFD700" stroke-width="1" stroke-opacity="0.1" stroke-dasharray="10 10" />
+        <line x1="0" y1="${height - 150}" x2="${width}" y2="${height - 150}" stroke="#FFD700" stroke-width="1" stroke-opacity="0.1" stroke-dasharray="10 10" />
+
+        <!-- Radial Center Glow -->
+        <defs>
+          <radialGradient id="centerGlow" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+            <stop offset="0%" style="stop-color:#FFD700;stop-opacity:0.08" />
+            <stop offset="100%" style="stop-color:#000000;stop-opacity:0" />
+          </radialGradient>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#centerGlow)" />
+
+        <!-- Text Content -->
+        <g transform="translate(${width/2}, 250)">
+          <text text-anchor="middle" fill="#FFD700" font-family="monospace" font-weight="900" font-size="14" letter-spacing="15" opacity="0.6">ACADEMIC EXCELLENCE DISPATCH</text>
+        </g>
+
+        <g transform="translate(${width/2}, 340)">
+          <text text-anchor="middle" fill="#FFFFFF" font-family="Arial Black, sans-serif" font-weight="900" font-size="24" letter-spacing="4" opacity="0.3">UPON VERIFICATION OF ALL MISSION OBJECTIVES</text>
+        </g>
+
+        <g transform="translate(${width/2}, 480)">
+          <text text-anchor="middle" fill="#FFFFFF" font-family="Arial Black, Helvetica, sans-serif" font-weight="950" font-size="110" letter-spacing="-4">${studentName.toUpperCase()}</text>
+        </g>
+
+        <g transform="translate(${width/2}, 580)">
+          <text text-anchor="middle" fill="#FFD700" font-family="Arial, sans-serif" font-weight="900" font-size="18" letter-spacing="8" opacity="0.5">HAS BEEN CONFERRED THE CERTIFICATION OF</text>
+        </g>
+
+        <g transform="translate(${width/2}, 680)">
+          <text text-anchor="middle" fill="#FFFFFF" font-family="Times New Roman, serif" font-weight="900" font-size="72" font-style="italic" letter-spacing="2">${cert.title.toUpperCase()}</text>
+        </g>
+
+        <!-- Footer Grid -->
+        <g transform="translate(150, 850)">
+          <text fill="#FFD700" font-family="monospace" font-weight="900" font-size="12" letter-spacing="4" opacity="0.4">COMMANDING_AUTHORITY</text>
+          <text y="40" fill="#FFFFFF" font-family="Arial Black, sans-serif" font-weight="900" font-size="22">${cert.issuedBy.toUpperCase()}</text>
+        </g>
+
+        <g transform="translate(${width/2}, 850)" text-anchor="middle">
+          <text fill="#FFD700" font-family="monospace" font-weight="900" font-size="12" letter-spacing="4" opacity="0.4">DISPATCH_ID</text>
+          <text y="40" fill="#FFFFFF" font-family="monospace" font-weight="900" font-size="22">${cert.id}</text>
+        </g>
+
+        <g transform="translate(${width - 400}, 850)">
+          <text fill="#FFD700" font-family="monospace" font-weight="900" font-size="12" letter-spacing="4" opacity="0.4">VALIDATION_PULSE</text>
+          <text y="40" fill="#FFFFFF" font-family="Arial Black, sans-serif" font-weight="900" font-size="22">${cert.date.toUpperCase()}</text>
+        </g>
+
+        <!-- Security Seal -->
+        <g transform="translate(${width - 150}, 150)">
+          <path d="M 0,-80 L 20,-20 L 80,0 L 20,20 L 0,80 L -20,20 L -80,0 L -20,-20 Z" fill="none" stroke="#FFD700" stroke-width="1" stroke-opacity="0.2" />
+          <circle r="40" fill="none" stroke="#FFD700" stroke-width="2" stroke-opacity="0.3" />
+          <text text-anchor="middle" y="5" fill="#FFD700" font-family="Arial Black, sans-serif" font-size="10" font-weight="900" opacity="0.5">HEDS</text>
+        </g>
+
+        <!-- Micro Text -->
+        <text x="60" y="${height - 60}" fill="#FFFFFF" font-family="monospace" font-size="8" opacity="0.1">VERIFY: https://heds.academy/v/${cert.id_hash.substring(0, 12)}</text>
+      </svg>
+    `
+  }
+
+  const handleDownload = async (cert: Certificate) => {
+    setIsDownloading(cert.id)
+    const svgString = generateCertificateSVG(cert, userName)
+    
+    const canvas = document.createElement('canvas')
+    canvas.width = 1400 * 2 
+    canvas.height = 1000 * 2
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    const img = new Image()
+    const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' })
+    const url = URL.createObjectURL(svgBlob)
+
+    img.onload = () => {
+      ctx.fillStyle = "#0a0a0a"
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+      
+      const pngUrl = canvas.toDataURL('image/png')
+      const downloadLink = document.createElement('a')
+      downloadLink.href = pngUrl
+      downloadLink.download = `HEDS_CREDENTIAL_${cert.id}.png`
+      document.body.appendChild(downloadLink)
+      downloadLink.click()
+      document.body.removeChild(downloadLink)
+      URL.revokeObjectURL(url)
+      setIsDownloading(null)
+    }
+    img.src = url
   }
 
   const handleShare = (id: string) => {
@@ -51,6 +183,8 @@ export default function StudentCertificatesPage() {
       setTimeout(() => setCopiedId(null), 2000)
     })
   }
+
+  if (!isMounted) return null
 
   return (
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
@@ -105,10 +239,16 @@ export default function StudentCertificatesPage() {
 
                <div className="flex gap-4 pt-4">
                   <Button 
-                    onClick={() => handleDownload(cert.title)}
-                    className="flex-1 h-16 bg-white text-black font-black uppercase text-[12px] tracking-[0.2em] rounded-2xl hover:bg-brand-yellow hover:scale-[1.02] active:scale-[0.98] transition-all gap-3 shadow-2xl"
+                    onClick={() => handleDownload(cert)}
+                    disabled={isDownloading === cert.id}
+                    className="flex-1 h-16 bg-white text-black font-black uppercase text-[12px] tracking-[0.2em] rounded-2xl hover:bg-brand-yellow hover:scale-[1.02] active:scale-[0.98] transition-all gap-3 shadow-2xl disabled:opacity-50"
                   >
-                     <Download className="size-5" /> Download
+                     {isDownloading === cert.id ? (
+                       <Loader2 className="size-5 animate-spin" />
+                     ) : (
+                       <Download className="size-5" />
+                     )} 
+                     Download
                   </Button>
                   <Button 
                     onClick={() => handleShare(cert.id)}
