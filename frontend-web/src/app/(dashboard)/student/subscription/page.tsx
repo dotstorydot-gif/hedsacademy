@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { Loader2, CreditCard, BookOpen, CheckCircle, AlertCircle, ChevronRight, Calendar, Zap, ShieldCheck, Globe } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { createClient } from "@/utils/supabase/client"
