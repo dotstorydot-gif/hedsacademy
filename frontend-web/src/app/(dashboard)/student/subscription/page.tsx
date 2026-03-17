@@ -64,8 +64,12 @@ export default function StudentSubscriptionPage() {
         .limit(10),
     ])
 
-    setSubscription(subRes.data)
-    setCourseAccess((accessRes.data ?? []) as CourseAccess[])
+    setSubscription(subRes.data as any)
+    const formattedAccess = (accessRes.data ?? []).map((item: any) => ({
+      ...item,
+      courses: Array.isArray(item.courses) ? item.courses[0] : item.courses
+    }))
+    setCourseAccess(formattedAccess as CourseAccess[])
     setLoading(false)
   }, [supabase])
 
