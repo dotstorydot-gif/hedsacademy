@@ -4,6 +4,8 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Logo } from "@/components/ui/logo"
+import { useRouter } from "next/navigation"
+import { createClient } from "@/utils/supabase/client"
 import { 
   LayoutDashboard, 
   Users, 
@@ -23,6 +25,13 @@ interface SidebarProps {
 
 export function Sidebar({ role }: SidebarProps) {
   const pathname = usePathname()
+  const router = useRouter()
+  const supabase = createClient()
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.push('/auth/login')
+  }
 
   const routes = {
     student: [
@@ -92,7 +101,10 @@ export function Sidebar({ role }: SidebarProps) {
         ))}
       </nav>
       <div className="p-4 border-t border-white/10">
-        <button className="flex items-center gap-3 px-3 py-2 w-full rounded-lg text-sm font-bold text-red-400 hover:bg-red-400/10 transition-colors uppercase tracking-widest text-[10px]">
+        <button 
+          onClick={handleLogout}
+          className="flex items-center gap-3 px-3 py-2 w-full rounded-lg text-sm font-bold text-red-400 hover:bg-red-400/10 transition-colors uppercase tracking-widest text-[10px]"
+        >
           <LogOut className="size-4" />
           Terminate Session
         </button>
