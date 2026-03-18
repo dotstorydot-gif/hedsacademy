@@ -56,14 +56,15 @@ export default function AuthCallback() {
         }
 
         // Redirect to intended destination or role-based dashboard
-        if (redirect) {
+        if (redirect && redirect.startsWith(`/${role.replace('_', '-')}`)) {
           router.push(redirect)
         } else {
           const redirectMap: Record<string, string> = {
             'super_admin': '/super-admin',
             'academy_admin': '/academy-admin',
             'instructor': '/instructor',
-            'student': '/student'
+            'student': '/student',
+            'support': '/support'
           }
           router.push(redirectMap[role] || '/student')
         }
